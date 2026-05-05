@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - x4nox_x</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #09090b; color: white; font-family: sans-serif; }
+        .bento-card { background-color: #121217; border: 1px solid #1f1f23; }
+        .logout-btn:hover { color: #ef4444; }
+    </style>
+</head>
+<body class="p-6">
+    <!-- Cabeçalho Restaurado -->
+    <header class="max-w-5xl mx-auto flex justify-between items-center mb-10 italic uppercase">
+        <div class="flex items-center gap-4">
+            <img src="xano.png" alt="Streamer" class="w-10 h-10 rounded-full border border-indigo-500 object-cover">
+            <div>
+                <h1 class="text-xl font-bold text-indigo-400 leading-none">x4nox_x</h1>
+                <p class="text-[10px] text-zinc-500 tracking-widest">Dashboard</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-6">
+            <button onclick="criarNovoBonus()" class="bg-green-600 hover:bg-green-500 px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2">
+                <i class="fa-solid fa-plus"></i> Painel
+            </button>
+            <button onclick="fazerLogout()" class="logout-btn text-zinc-500 transition-all text-sm font-bold flex items-center gap-2">
+                <i class="fa-solid fa-right-from-bracket"></i> Sair
+            </button>
+        </div>
+    </header>
+
+    <main id="admin-container" class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Os botões de edição serão injetados aqui -->
+    </main>
+
+    <!-- Modal de Edição -->
+    <div id="editModal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-50">
+        <div class="bento-card w-full max-w-md rounded-3xl p-8 shadow-2xl">
+            <h2 class="text-xl font-bold text-indigo-400 mb-6 italic uppercase">Editar Painel</h2>
+            <form id="editForm" class="space-y-4">
+                <input type="hidden" id="editId">
+                <div>
+                    <label class="block text-[10px] text-zinc-500 uppercase font-bold mb-1 italic">Valor do Bónus</label>
+                    <input type="text" id="novoValor" class="bg-zinc-900 border border-zinc-800 w-full p-3 rounded-xl text-white outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-[10px] text-zinc-500 uppercase font-bold mb-1 italic">Código Promocional</label>
+                    <input type="text" id="novoCodigo" class="bg-zinc-900 border border-zinc-800 w-full p-3 rounded-xl text-white outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-[10px] text-zinc-500 uppercase font-bold mb-1 italic">Nova Imagem (Logo)</label>
+                    <input type="file" id="novaFoto" accept="image/*" class="text-xs text-zinc-400 block w-full mt-2">
+                </div>
+                <div class="flex gap-2 pt-4">
+                    <button type="button" onclick="toggleModal()" class="flex-1 bg-zinc-800 py-3 rounded-xl font-bold italic uppercase text-xs">Cancelar</button>
+                    <button type="submit" id="saveBtn" class="flex-1 bg-indigo-600 py-3 rounded-xl font-bold hover:bg-indigo-500 transition-all italic uppercase text-xs">Guardar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const sUrl = 'https://fndbcsreimpdgbubytqn.supabase.co';
+        const sKey = 'sb_publishable_NUs_857Sa2uLA9vEMBj7RQ_wjd69D_c';
+        const supabaseClient = supabase.createClient(sUrl, sKey);
+
+        // Função de Logout
+        async function fazerLogout() {
+            const { error } = await supabaseClient.auth.signOut();
+            if (error) alert("Erro ao sair");
+            window.location.href = "login.html"; // Ajusta para o nome do teu ficheiro de login
+        }
+
+        async function listarPaineis() {
+            const { data, error } = await supabaseClient.from('bonus_config').select('*').order('id', { ascending: true });
+            if (error) return console.log(error);
+
+            const container = document.getElementById('admin-container');
+            container.innerHTML = '';
+            data.forEach(b => {
+                container.innerHTML += `
+                    <button onclick="abrirEditor(${b.id}, '${b.valor}', '${b.codigo}')" class="bento-card p-6 rounded-2xl flex justify-between items-center hover:border-indigo-500 transition-all italic group">
+                        <div class="text-left">
+                            <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">ID #${b.id}</p>
+                            <p class="font-black text-xl uppercase">${b.valor}</p>
+                        </div>
+                        <i class="fa-solid fa-pen-to-square text-zinc-600 group-hover:text-indigo-400 transition-colors"></i>
+                    </button>
+                `;
+            });
+        }
+
+        async function criarNovoBonus() {
+            const { data: last } = await supabaseClient.from('bonus_config').select('id').order('id', { ascending: false }).limit(1);
+            const nextId = (last && last.length > 0) ? last[0].id + 1 : 1;
+            
+            const { error } = await supabaseClient.from('bonus_config').insert([{ 
+                id: nextId, 
+                valor: 'Novo Bónus', 
+                codigo: 'CODIGO' 
+            }]);
+
+            if (error) alert("Erro ao criar painel");
+            listarPaineis();
+        }
+
+        function abrirEditor(id, valor, codigo) {
+            document.getElementById('editId').value = id;
+            document.getElementById('novoValor').value = valor;
+            document.getElementById('novoCodigo').value = codigo;
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+
+        function toggleModal() { document.getElementById('editModal').classList.add('hidden'); }
+
+        document.getElementById('editForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const saveBtn = document.getElementById('saveBtn');
+            saveBtn.innerText = 'A guardar...';
+            
+            const id = document.getElementById('editId').value;
+            const valor = document.getElementById('novoValor').value;
+            const codigo = document.getElementById('novoCodigo').value;
+            const file = document.getElementById('novaFoto').files[0];
+            
+            let imgUrl = null;
+            if (file) {
+                const fileName = `img-${id}-${Date.now()}`;
+                const { data: upData, error: upError } = await supabaseClient.storage.from('bonus-images').upload(fileName, file);
+                if(upData) {
+                    const { data: pub } = supabaseClient.storage.from('bonus-images').getPublicUrl(fileName);
+                    imgUrl = pub.publicUrl;
+                }
+            }
+
+            const updateData = { valor, codigo };
+            if (imgUrl) updateData.imagem_url = imgUrl;
+
+            await supabaseClient.from('bonus_config').update(updateData).eq('id', id);
+            
+            saveBtn.innerText = 'Guardar Alterações';
+            toggleModal();
+            listarPaineis();
+        });
+
+        window.onload = listarPaineis;
+    </script>
+</body>
+</html>

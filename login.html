@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Stream Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0d0d0f;
+            font-family: 'Inter', sans-serif;
+            color: white;
+        }
+        .login-card {
+            background-color: #16161a;
+            border: 1px solid #27272a;
+        }
+        .input-group {
+            background-color: #1c1c21;
+            border: 1px solid #3f3f46;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <!-- Container Principal (Grelha de 2 Colunas) -->
+    <div class="max-w-5xl w-full grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+        
+        <!-- Lado Esquerdo: Info -->
+        <div class="login-card rounded-3xl p-10 flex flex-col justify-between">
+            <div>
+                <div class="bg-zinc-800 w-12 h-12 rounded-xl flex items-center justify-center mb-6">
+                    <i class="fa-solid fa-border-all text-xl"></i>
+                </div>
+                <h2 class="text-zinc-400 font-semibold mb-1 uppercase tracking-tight">Stream Dashboard</h2>
+                <p class="text-zinc-500 text-sm mb-8">Painel de controlo — acesso privado</p>
+                
+                <h1 class="text-5xl font-bold mb-4">Entrar no Dashboard</h1>
+                <p class="text-zinc-400 text-lg leading-relaxed">
+                    Acesso reservado para gestão de widgets, managers e ferramentas de streaming.
+                </p>
+            </div>
+
+            <!-- Badges de Status -->
+            <div class="flex flex-wrap gap-3 mt-10">
+                <span class="bg-zinc-900/50 border border-zinc-800 px-4 py-2 rounded-full text-xs text-zinc-400">
+                    <i class="fa-solid fa-shield-halved mr-2"></i> Sessão protegida
+                </span>
+                <span class="bg-zinc-900/50 border border-zinc-800 px-4 py-2 rounded-full text-xs text-zinc-400">
+                    <i class="fa-solid fa-tower-broadcast mr-2"></i> Stream ao vivo
+                </span>
+            </div>
+        </div>
+
+        <!-- Lado Direito: Formulário -->
+        <div class="login-card rounded-3xl p-10">
+            <h2 class="text-2xl font-bold mb-2">Autenticação</h2>
+            <p class="text-zinc-500 text-sm mb-8">Introduz as credenciais para continuar.</p>
+
+            <form id="loginForm" class="space-y-6">
+                <!-- Campo Utilizador -->
+                <div>
+                    <label class="block text-xs font-bold text-zinc-400 uppercase mb-2 tracking-widest">Utilizador</label>
+                    <div class="input-group flex items-center rounded-xl p-4">
+                        <i class="fa-regular fa-user text-zinc-500 mr-4"></i>
+                        <input type="text" id="username" placeholder="Introduz o utilizador" 
+                               class="bg-transparent w-full outline-none text-zinc-200 placeholder:text-zinc-600">
+                    </div>
+                </div>
+
+                <!-- Campo Palavra-passe -->
+                <div>
+                    <label class="block text-xs font-bold text-zinc-400 uppercase mb-2 tracking-widest">Palavra-passe</label>
+                    <div class="input-group flex items-center rounded-xl p-4">
+                        <i class="fa-solid fa-lock text-zinc-500 mr-4"></i>
+                        <input type="password" id="password" placeholder="Introduz a palavra-passe" 
+                               class="bg-transparent w-full outline-none text-zinc-200 placeholder:text-zinc-600">
+                        <i class="fa-regular fa-eye text-zinc-500 cursor-pointer hover:text-zinc-300"></i>
+                    </div>
+                </div>
+
+                <!-- Botão Iniciar Sessão -->
+                <button type="submit" 
+                        class="w-full bg-zinc-600 hover:bg-zinc-500 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm">
+                    <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sessão
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    const sUrl = 'https://fndbcsreimpdgbubytqn.supabase.co';
+    const sKey = 'sb_publishable_NUs_857Sa2uLA9vEMBj7RQ_wjd69D_c';
+    // Aqui usamos o nome 'supabaseClient' para não chocar com a biblioteca
+    const supabaseClient = supabase.createClient(sUrl, sKey);
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password,
+        });
+
+        if (error) {
+            alert("Erro: " + error.message);
+        } else {
+            alert("Sucesso! Bem-vindo.");
+            window.location.href = 'admin.html';
+        }
+    });
+</script>
+</body>
+</html>
